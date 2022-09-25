@@ -22,20 +22,43 @@ import com.example.todoappcompose.R
 import com.example.todoappcompose.components.PriorityItem
 import com.example.todoappcompose.data.model.PriorityModel
 import com.example.todoappcompose.ui.theme.*
+import com.example.todoappcompose.ui.viewmodel.SharedViewModel
+import com.example.todoappcompose.util.Enums
 
 @Composable
-fun ListAppBar() {
-    DefaultListAppBar(
-        onSearchClicked = {
+fun ListAppBar(
+    sharedViewModel: SharedViewModel,
+    searchAppBarState: Enums.SearchAppBarState,
+    searchTextState: String
+) {
+    when (searchAppBarState) {
+        Enums.SearchAppBarState.CLOSED -> {
+            DefaultListAppBar(
+                onSearchClicked = {
+                    sharedViewModel.searchAppBarState.value = Enums.SearchAppBarState.OPENED
+                },
+                onSortClicked = {
 
-        },
-        onSortClicked = {
+                },
+                onDeleteClicked = {
 
-        },
-        onDeleteClicked = {
-
+                }
+            )
         }
-    )
+        else -> {
+            SearchAppBar(
+                text = searchTextState,
+                onTextChanged = { newText ->
+                    sharedViewModel.searchTextState.value = newText
+                },
+                onCloseClicked = {
+                    sharedViewModel.searchAppBarState.value = Enums.SearchAppBarState.CLOSED
+                    sharedViewModel.searchTextState.value = ""
+                },
+                onSearchClicked = {}
+            )
+        }
+    }
 }
 
 @Composable
@@ -159,6 +182,10 @@ fun SearchAppBar(
     onCloseClicked: () -> Unit,
     onSearchClicked: (String) -> Unit
 ) {
+    var trailingIconState by remember {
+        mutableStateOf(Enums.TrailingIconState.READY_TO_DELETE)
+    }
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -196,7 +223,20 @@ fun SearchAppBar(
             trailingIcon = {
                 IconButton(
                     onClick = {
-                        onCloseClicked()
+                        when (trailingIconState) {
+                            Enums.TrailingIconState.READY_TO_DELETE -> {
+                                onTextChanged("")
+                                trailingIconState = Enums.TrailingIconState.READY_TO_CLOSE
+                            }
+                            Enums.TrailingIconState.READY_TO_CLOSE -> {
+                                if (text.isNotEmpty()) {
+                                    onTextChanged("")
+                                } else {
+                                    onCloseClicked()
+                                    trailingIconState = Enums.TrailingIconState.READY_TO_DELETE
+                                }
+                            }
+                        }
                     }
                 ) {
                     Icon(
