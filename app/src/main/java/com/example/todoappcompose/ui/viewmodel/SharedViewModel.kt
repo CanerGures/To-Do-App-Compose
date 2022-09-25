@@ -1,6 +1,7 @@
 package com.example.todoappcompose.ui.viewmodel
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoappcompose.data.database.ToDoTaskEntity
 import com.example.todoappcompose.data.repository.ToDoRepository
@@ -11,7 +12,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class SharedViewModel @Inject constructor(private val repository: ToDoRepository) : ViewModel() {
+class SharedViewModel @Inject constructor(
+    private val repository: ToDoRepository,
+    application: Application
+) : AndroidViewModel(application) {
 
     private val _allTasks = MutableStateFlow<List<ToDoTaskEntity>>(emptyList())
     val allTasks: StateFlow<List<ToDoTaskEntity>> = _allTasks
